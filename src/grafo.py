@@ -1,8 +1,11 @@
 """Grafo dirigido y ponderado de la red de riego."""
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from math import isfinite
 import re
 import bfs as recorrido
+import dfs as profundidad
 
 
 @dataclass
@@ -47,7 +50,7 @@ class Grafo:
             raise ValueError(f"Arista repetida: {origen} -> {destino}")
         if isinstance(peso, bool) or not isinstance(peso, (int, float)):
             raise TypeError("El peso debe ser numérico")
-        if peso <= 0 or not isfinite(peso):
+        if peso <= 0 or (isinstance(peso, float) and not isfinite(peso)):
             raise ValueError("El peso debe ser positivo y finito")
         self.__nodos[origen].salidas[destino] = peso
 
@@ -83,17 +86,19 @@ class Grafo:
         return recorrido.traza_bfs(self, origen)
 
     def dfs(self, origen: str) -> list[str]:
-        """Delega el recorrido en el módulo de Samuel."""
-        from dfs import dfs
-        return dfs(self, origen)
+        """Delega el recorrido en profundidad."""
+        return profundidad.dfs(self, origen)
+
+    def traza_dfs(self, origen: str) -> list[profundidad.PasoDFS]:
+        """Devuelve los estados de la pila generados por el DFS."""
+        return profundidad.traza_dfs(self, origen)
 
     def alcanzables_desde(self, origen: str) -> set[str]:
-        """Delega la consulta de alcanzabilidad en el módulo de Samuel."""
-        from dfs import alcanzables_desde
-        return alcanzables_desde(self, origen)
+        """Devuelve los vértices alcanzables en el sentido de las aristas."""
+        return profundidad.alcanzables_desde(self, origen)
 
     def a_lista_adyacencia(self) -> dict[str, list[tuple[str, float]]]:
-        """Delega la conversión en el módulo de Fernando."""
+        """Devuelve una copia de la lista de adyacencia ponderada."""
         from representaciones import a_lista_adyacencia
         return a_lista_adyacencia(self)
 
